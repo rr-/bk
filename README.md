@@ -8,7 +8,7 @@ An utility that lets you change desktop background for GNU/Linux and Windows.
 - Support for multi monitor environments
 - Straightforward CLI parameters
 - Fitting wallpaper to desktop (`--fit`)
-- Covering whole wallpaper (`--cover`)
+- Covering whole desktop (`--cover`)
 - Scaling the image by percentage (`--scale 0.5 0.5` to scale to 50% of
   original size)
 - Cropping the image by percentage (`--crop 0.2 0.2 0.8 0.8` to crop 20% from
