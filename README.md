@@ -21,7 +21,7 @@ An utility that lets you change desktop background for GNU/Linux and Windows.
 
 ### Example
 
-    wallpaper set 2 minako.png \
+    bk set 2 minako.png \
         --background lemonchiffon \
         --border-size 2 --border-color maroon \
         --translate 1 0 \
