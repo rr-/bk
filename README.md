@@ -37,7 +37,7 @@ Result:
 ### Requirements
 
 - Python 3
-- PIL
+- PIL (`pip install pillow`)
 
 Specific to GNU/Linux:
 
