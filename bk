@@ -185,14 +185,14 @@ class WallpaperChanger(object):
         else:
             font_path = 'arial.ttf'
         font = ImageFont.truetype(font_path, 200, encoding='unic')
-        paths = {}
-        for monitor, info in self.monitors.items():
-            path_src = self.get_path(monitor)
-            path_dst = self.get_temp_path(monitor)
-            paths[path_src] = path_dst
+        paths = []
+        for m, info in self.monitors.items():
+            path_src = self.get_path(m)
+            path_dst = self.get_temp_path(m)
+            paths.append(path_dst)
 
             img = Image.open(path_src)
-            text = str(monitor)
+            text = str(m)
 
             text_img = Image.new('RGBA', (400, 400), (0, 0, 0, 0))
             draw = ImageDraw.Draw(text_img)
@@ -208,10 +208,10 @@ class WallpaperChanger(object):
             img.paste(blurred_text_img, pos, blurred_text_img)
             img.save(path_dst, 'JPEG', quality=100)
 
-        self.render(list(paths.values()))
+        self.render(paths)
         time.sleep(1)
         self.refresh()
-        for path in paths.values():
+        for path in paths:
             os.unlink(path)
 
     def render(self, paths):
