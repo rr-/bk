@@ -321,55 +321,57 @@ class X11WallpaperChanger(WallpaperChanger):
 
 def add_set_arg_parser(parent_parser, fmt, wc):
     p = parent_parser.add_parser(
-        'set', help='sets a wallpaper', formatter_class=fmt)
+        'set', help='set a wallpaper', formatter_class=fmt)
     p.add_argument(
         '-p', '--preview', action='store_true',
-        help='previews the changes without applying them')
+        help='preview the changes without applying them')
     p.add_argument(
         '-s', '--scale', type=float, metavar='RATIO', default=1,
-        help='scales image by given factor')
+        help='scale image by given factor')
     p.add_argument(
         '-f', '--fit', action='store_true',
-        help='fits the image within monitor work area')
+        help='fit the image within monitor work area')
     p.add_argument(
         '-c', '--cover', action='store_true',
-        help='makes the image cover whole monitor work area')
+        help='make the image cover whole monitor work area')
     p.add_argument(
         '-b', '--background', metavar='COLOR', default='#000000',
-        help='selects background color')
+        help='select background color')
     p.add_argument(
         '-t', '--translate', type=float, nargs=2, metavar=('X', 'Y'),
         default=(0.5, 0.5),
-        help='places the image at given position')
+        help='place the image at given position')
     p.add_argument(
         '-bs', '--border-size', type=int, metavar='SIZE', default=0,
-        help='selects border width')
+        help='select border width')
     p.add_argument(
         '-bc', '--border-color', metavar='COLOR', default='black',
-        help='selects border size')
+        help='select border size')
     p.add_argument(
         '--crop', type=float, nargs=4, metavar=('X1', 'Y1', 'X2', 'Y2'),
         default=(0, 0, 1, 1),
-        help='selects crop area')
+        help='select crop area')
     p.add_argument(
         '-g', '--gap', '--gaps', type=int, nargs=4,
         metavar=('U', 'R', 'D', 'L'),
         default=(0, 0, 0, 0),
-        help='keeps "border" around work area')
+        help='keep "border" around work area')
     p.add_argument(
         'monitor', metavar='MONITOR', type=int,
-        help='monitor number')
-    p.add_argument('path', metavar='PATH', nargs='?', help='input image path')
+        help='set the monitor number')
+    p.add_argument(
+        'path', metavar='PATH', nargs='?',
+        help='set the input image path')
     p.set_defaults(func=wc.set)
 
 def add_identify_arg_parser(parent_parser, fmt, wc):
     p = parent_parser.add_parser(
-        'identify', help='identifies monitor numbers')
+        'identify', help='briefly display monitor numbers on the desktop')
     p.set_defaults(func=wc.identify)
 
 def add_swap_arg_parser(parent_parser, fmt, wc):
     p = parent_parser.add_parser(
-        'swap', help='swaps wallpapers between monitors')
+        'swap', help='swap wallpapers between monitors')
     p.add_argument(
         'first', metavar='FIRST', type=int, nargs='?', default=1,
         help='first monitor number')
@@ -398,10 +400,10 @@ def get_arg_parser(wc):
     fmt = lambda prog: CustomHelpFormatter(prog)
     parser = argparse.ArgumentParser(
         description='Wallpaper utility', formatter_class=fmt)
-    subparsers = parser.add_subparsers(help='chooses the subcommand')
+    subparsers = parser.add_subparsers(help='choose the subcommand')
     add_set_arg_parser(subparsers, fmt, wc)
-    add_identify_arg_parser(subparsers, fmt, wc)
     add_swap_arg_parser(subparsers, fmt, wc)
+    add_identify_arg_parser(subparsers, fmt, wc)
     return parser
 
 def main():
