@@ -342,10 +342,6 @@ def add_set_arg_parser(parent_parser, fmt, wc):
         default=(0.5, 0.5),
         help='places the image at given position')
     p.add_argument(
-        '-g', '--gap', type=int, nargs=4, metavar=('u', 'r', 'd', 'l'),
-        default=(0, 0, 0, 0),
-        help='keeps "border" around work area')
-    p.add_argument(
         '-bs', '--border-size', type=int, metavar='s', default=0,
         help='selects border width')
     p.add_argument(
@@ -355,6 +351,11 @@ def add_set_arg_parser(parent_parser, fmt, wc):
         '--crop', type=float, nargs=4, metavar=('x1', 'y1', 'x2', 'y2'),
         default=(0, 0, 1, 1),
         help='selects crop area')
+    p.add_argument(
+        '-g', '--gap', '--gaps', type=int, nargs=4,
+        metavar=('u', 'r', 'd', 'l'),
+        default=(0, 0, 0, 0),
+        help='keeps "border" around work area')
     p.add_argument('monitor', type=int, help='monitor number')
     p.add_argument('path', nargs='?', help='input image path')
     p.set_defaults(func=wc.set)
