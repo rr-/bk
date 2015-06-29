@@ -148,7 +148,7 @@ class WallpaperChanger(object):
                 source_img = ImageOps.expand(
                     source_img, border=args.border_size, fill=args.border_color)
 
-            target_img.paste(source_img, target_position)
+            target_img.paste(source_img, target_position, source_img)
 
         if args.preview:
             target_path = self.get_temp_path()
