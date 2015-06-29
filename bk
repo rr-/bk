@@ -376,10 +376,24 @@ def add_swap_arg_parser(parent_parser, fmt, wc):
         help='second monitor number')
     p.set_defaults(func=wc.swap)
 
-def get_arg_parser(wc):
-    fmt = lambda prog: argparse.HelpFormatter(
-        prog, max_help_position=40, width=80)
+class CustomHelpFormatter(argparse.HelpFormatter):
+    def __init__(self, prog):
+        super().__init__(prog, max_help_position=40, width=80)
 
+    def _format_action_invocation(self, action):
+        if not action.option_strings:
+            return super()._format_action_invocation(action)
+        default = self._get_default_metavar_for_optional(action)
+        values = self._format_args(action, default)
+        opts = action.option_strings
+        short = [arg for arg in opts if not arg.startswith('--')]
+        long = [arg for arg in opts if arg.startswith('--')]
+        return '%*s%s%s %s' % (
+            3, ', '.join(short), ', ' if short else '  ', ', '.join(long),
+            values)
+
+def get_arg_parser(wc):
+    fmt = lambda prog: CustomHelpFormatter(prog)
     parser = argparse.ArgumentParser(
         description='Wallpaper utility', formatter_class=fmt)
     subparsers = parser.add_subparsers(help='chooses the subcommand')
