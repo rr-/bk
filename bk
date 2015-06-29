@@ -118,7 +118,7 @@ class WallpaperChanger(object):
 
             source_img = Image.open(source_path)
             if args.crop:
-                crop_area = tuple(
+                crop_area = (
                     int(source_img.size[0] * args.crop[0]),
                     int(source_img.size[1] * args.crop[1]),
                     int(source_img.size[0] * args.crop[2]),
@@ -130,17 +130,17 @@ class WallpaperChanger(object):
             elif args.cover:
                 source_img = cover(source_img, work_area)
 
-            resize_area = tuple(
+            resize_area = (
                 int(source_img.size[0] * args.scale),
                 int(source_img.size[1] * args.scale))
 
             source_img = source_img.resize(resize_area, Image.ANTIALIAS)
 
-            freedom_area = tuple(
+            freedom_area = (
                 work_area[0] - resize_area[0],
                 work_area[1] - resize_area[1])
 
-            target_position = tuple(
+            target_position = (
                 int(gaps[0] + freedom_area[0] * args.translate[0]),
                 int(gaps[1] + freedom_area[1] * args.translate[1]))
 
