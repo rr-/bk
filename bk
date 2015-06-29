@@ -100,9 +100,9 @@ class WallpaperChanger(object):
         mon_size = (
             self.monitors[args.monitor].width,
             self.monitors[args.monitor].height)
-        work_area = tuple(
-            mon_size[0] - 2 * args.border_size - gaps[0]  - gaps[1],
-            mon_size[1] - 2 * args.border_size - gaps[2]  - gaps[3])
+        work_area = (
+            mon_size[0] - 2 * args.border_size - gaps[0] - gaps[2],
+            mon_size[1] - 2 * args.border_size - gaps[1] - gaps[3])
 
         target_img = Image.new('RGB', mon_size, args.background)
 
