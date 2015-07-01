@@ -221,6 +221,10 @@ class WallpaperChanger(object):
         self.render([self.get_path(i) for i in self.monitors])
 
 class WindowsWallpaperChanger(WallpaperChanger):
+    @staticmethod
+    def detect():
+        return 'cygwin' in sys.platform
+
     def render(self, paths):
         full_path = 'C:\\windows\\temp\\wallpaper.bmp'
         total_width = max(m.x + m.width for m in self.monitors.values())
@@ -277,6 +281,10 @@ public class Setter {
         return ps.stdout.read().decode('utf-8')
 
 class X11WallpaperChanger(WallpaperChanger):
+    @staticmethod
+    def detect():
+        return 'DISPLAY' in os.environ
+
     def render(self, paths):
         subprocess.Popen(['feh', '--bg-fill'] + list(paths)).wait()
 
@@ -407,14 +415,19 @@ def get_arg_parser(wc):
     return parser
 
 def main():
-    if 'cygwin' in sys.platform:
-        wc = WindowsWallpaperChanger()
-    else:
-        wc = X11WallpaperChanger()
-    parser = get_arg_parser(wc)
+    changers = [WindowsWallpaperChanger, X11WallpaperChanger]
+    chosen = None
+    for changer in changers:
+        if changer.detect():
+            chosen = changer()
+            break
+    if chosen is None:
+        print('This graphical environment is not supported.', file=sys.stderr)
+        return
+    parser = get_arg_parser(chosen)
     args = parser.parse_args()
     if 'func' not in args:
-        wc.refresh()
+        chosen.refresh()
     else:
         args.func(args)
 
