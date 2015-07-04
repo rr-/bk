@@ -12,7 +12,7 @@ Cygwin.
 ### Requirements
 
 - Python 3
-- PIL (`pip install pillow`)
+- Pillow (`pip install pillow`)
 - `screeninfo` (`pip install screeninfo`)
 
 Specific to GNU/Linux:
