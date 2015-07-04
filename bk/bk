@@ -9,6 +9,9 @@ import sys
 import tempfile
 import time
 
+class ArgumentError(RuntimeError):
+    pass
+
 try:
     from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 except ImportError:
@@ -72,7 +75,7 @@ class WallpaperChanger(object):
 
     def validate_monitor_number(self, number):
         if number not in self.monitors:
-            raise RuntimeError('Monitor number out of range')
+            raise ArgumentError('Monitor number out of range')
 
     def get_path(self, number):
         return os.path.expanduser('~/.wallpaper%d' % number)
@@ -104,7 +107,7 @@ class WallpaperChanger(object):
             else:
                 source_path = args.path
             if not os.path.exists(source_path):
-                raise RuntimeError(source_path + ' does not exist')
+                raise ArgumentError(source_path + ' does not exist')
 
             source_img = Image.open(source_path)
             if args.crop:
@@ -209,7 +212,7 @@ class WallpaperChanger(object):
             os.unlink(path)
 
     def render(self, paths):
-        raise NotImplementedError()
+        raise NotImplementedError('Override me')
 
     def refresh(self):
         self.render([self.get_path(i) for i in self.monitors])
@@ -410,4 +413,7 @@ def main():
         args.func(args)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except ArgumentError as e:
+        print(str(e))
