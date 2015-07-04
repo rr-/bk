@@ -177,10 +177,7 @@ class WallpaperChanger(object):
         self.refresh()
 
     def identify(self, args):
-        if 'cygwin' in sys.platform:
-            font_path = 'C:\\windows\\fonts\\Arial.ttf'
-        else:
-            font_path = 'arial.ttf'
+        font_path = self.get_font_path()
         font = ImageFont.truetype(font_path, 200, encoding='unic')
         paths = []
         for m, info in self.monitors.items():
@@ -214,6 +211,9 @@ class WallpaperChanger(object):
     def render(self, paths):
         raise NotImplementedError('Override me')
 
+    def get_font_path(self):
+        raise NotImplementedError('Override me')
+
     def refresh(self):
         self.render([self.get_path(i) for i in self.monitors])
 
@@ -228,30 +228,76 @@ class WallpaperChanger(object):
 class WindowsWallpaperChanger(WallpaperChanger):
     @staticmethod
     def detect():
-        return 'cygwin' in sys.platform
+        return 'win32' in sys.platform
 
-    def render(self, paths):
+    def get_font_path(self):
+        return 'C:\\windows\\fonts\\Arial.ttf'
+
+    @staticmethod
+    def do_render(paths, monitors):
         full_path = 'C:\\windows\\temp\\wallpaper.bmp'
-        total_width = max(m.x + m.width for m in self.monitors.values())
-        total_height = max(m.y + m.height for m in self.monitors.values())
+        total_width = max(m.x + m.width for m in monitors.values())
+        total_height = max(m.y + m.height for m in monitors.values())
         full_img = Image.new('RGBA', (total_width, total_height), (0, 0, 0, 0))
-        for i, monitor in enumerate(self.monitors.values()):
+        for i, monitor in enumerate(monitors.values()):
             sub_img = WallpaperChanger._open_wallpaper_image(paths[i], monitor)
             sub_img = sub_img.resize((monitor.width, monitor.height))
             full_img.paste(sub_img, (monitor.x, monitor.y))
         full_img.save(full_path)
+        return full_path
+
+    def render(self, paths):
+        full_path = WindowsWallpaperChanger.do_render(paths, self.monitors)
+
+        import ctypes
+        import winreg
+
+        SPI_SETDESKWALLPAPER  = 0x14
+        SPIF_UPDATEINIFILE    = 1
+        SPIF_SENDWININICHANGE = 2
+        HKEY_CURRENT_USER     = 0x80000001
+        KEY_ALL_ACCESS        = 0x000F003F
+        REG_SZ                = 0x00000001
+
+        ctypes.windll.user32.SystemParametersInfoA(
+            SPI_SETDESKWALLPAPER,
+            0,
+            full_path.encode('ascii'),
+            SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            'Control Panel\\Desktop',
+            0,
+            winreg.KEY_ALL_ACCESS)
+
+        if key is not None:
+            for node in ['WallpaperStyle', 'TileWallpaper']:
+                winreg.SetValueEx(key, node, 0, REG_SZ, '1')
+
+            winreg.CloseKey(key)
+
+class CygwinWallpaperChanger(WallpaperChanger):
+    @staticmethod
+    def detect():
+        return 'cygwin' in sys.platform
+
+    def get_font_path(self):
+        return 'C:\\windows\\fonts\\Arial.ttf'
+
+    def render(self, paths):
+        full_path = WindowsWallpaperChanger.do_render(paths, self.monitors)
 
         import ctypes
 
         BOOL  = ctypes.c_int
-        UINT  = ctypes.c_uint32
+        UINT  = ctypes.c_uint
         LONG = ctypes.c_long
         DWORD = ctypes.c_ulong
         HANDLE = ctypes.c_ulong
         HKEY = HANDLE
         PVOID = ctypes.c_void_p
         PHKEY = ctypes.POINTER(HKEY)
-        BYTE = ctypes.c_char
         PBYTE = ctypes.c_char_p
         LPCSTR = ctypes.c_char_p
 
@@ -282,21 +328,18 @@ class WindowsWallpaperChanger(WallpaperChanger):
             HKEY, LPCSTR, DWORD, DWORD, PBYTE, DWORD]
 
         key = HKEY()
-        if advapi32.RegOpenKeyExA(
+        result = advapi32.RegOpenKeyExA(
             HKEY_CURRENT_USER,
             'Control Panel\\Desktop'.encode('ascii'),
             0,
             KEY_ALL_ACCESS,
-            ctypes.byref(key)) == 0:
+            ctypes.byref(key))
 
+        if result == 0:
+            value = '1'.encode('ascii')
             for node in ['WallpaperStyle', 'TileWallpaper']:
                 advapi32.RegSetValueExA(
-                    key,
-                    node.encode('ascii'),
-                    0,
-                    REG_SZ,
-                    '1'.encode('ascii'),
-                    1)
+                    key, node.encode('ascii'), 0, REG_SZ, value, len(value))
 
             advapi32.RegCloseKey(key)
 
@@ -304,6 +347,9 @@ class X11WallpaperChanger(WallpaperChanger):
     @staticmethod
     def detect():
         return 'DISPLAY' in os.environ
+
+    def get_font_path(self):
+        return 'arial.ttf'
 
     def render(self, paths):
         subprocess.Popen(['feh', '--bg-fill'] + list(paths)).wait()
@@ -396,15 +442,21 @@ def get_arg_parser(wc):
     return parser
 
 def main():
-    changers = [WindowsWallpaperChanger, X11WallpaperChanger]
+    changers = [
+        WindowsWallpaperChanger,
+        CygwinWallpaperChanger,
+        X11WallpaperChanger]
+
     chosen = None
     for changer in changers:
         if changer.detect():
             chosen = changer()
             break
+
     if chosen is None:
         print('This graphical environment is not supported.', file=sys.stderr)
         return
+
     parser = get_arg_parser(chosen)
     args = parser.parse_args()
     if 'func' not in args:

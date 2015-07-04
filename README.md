@@ -1,7 +1,8 @@
 bk
 ---
 
-An utility that lets you change desktop background for GNU/Linux and Windows.
+An utility that lets you change desktop background for GNU/Linux, Windows and
+Cygwin.
 
 ### Installation
 
@@ -18,10 +19,6 @@ Specific to GNU/Linux:
 
 - X11 + Xinerama
 - feh (`pacman -S feh`, `apt-get install feh`)
-
-Specific to MS Windows:
-
-- Cygwin (will probably support native Python as well at some point)
 
 ### Features
 
@@ -56,6 +53,5 @@ Result:
 
 ### Limitations
 
-- Windows users need Cygwin
 - Can't set one wallpaper across multiple monitors
 - Can't set wallpaper image from clipboard
