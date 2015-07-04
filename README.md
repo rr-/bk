@@ -3,6 +3,27 @@ bk
 
 An utility that lets you change desktop background for GNU/Linux and Windows.
 
+### Installation
+
+- `pip install bk`, or
+- `python3 setup.py install`
+
+### Requirements
+
+- Python 3
+- PIL (`pip install pillow`)
+- `screeninfo` (`pip install screeninfo`)
+
+Specific to GNU/Linux:
+
+- X11 + Xinerama
+- feh (`pacman -S feh`, `apt-get install feh`)
+
+Specific to MS Windows:
+
+- Cygwin (will probably support native Python as well at some point)
+- Powershell
+
 ### Features
 
 - Support for multi monitor environments
@@ -33,22 +54,6 @@ adding 2px dark red border and using light yellow color as background color.
 Result:
 
 ![result](https://cloud.githubusercontent.com/assets/1045476/8054172/c4ffe1a0-0e96-11e5-8e3b-3f97df75f84e.jpg)
-
-### Requirements
-
-- Python 3
-- PIL (`pip install pillow`)
-- `screeninfo` (`pip install screeninfo`)
-
-Specific to GNU/Linux:
-
-- X11 + Xinerama
-- feh (`pacman -S feh`, `apt-get install feh`)
-
-Specific to MS Windows:
-
-- Cygwin (will probably support native Python as well at some point)
-- Powershell
 
 ### Limitations
 
