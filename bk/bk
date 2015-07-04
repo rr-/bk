@@ -212,12 +212,11 @@ class WallpaperChanger(object):
 
     @staticmethod
     def _open_wallpaper_image(path, info):
-        try:
-            return Image.open(path_src)
-        except:
-            print(('Cannot open %s for reading. ' +
-                'have you set the wallpaper using bk?') % path, file=sys.stderr)
+        if not os.path.exists(path):
+            print('%s not found. Have you set the wallpaper using bk?' % path,
+                file=sys.stderr)
             return Image.new('RGBA', (info.width, info.height), (0, 0, 0, 0))
+        return Image.open(path)
 
 class WindowsWallpaperChanger(WallpaperChanger):
     @staticmethod
