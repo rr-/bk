@@ -64,6 +64,14 @@ def cover(img, size_dst, quality=Image.ANTIALIAS):
 def fit(img, size_dst, quality=Image.ANTIALIAS):
     return cover_or_fit(img, size_dst, quality, cover=False)
 
+def open_image(path, info):
+    try:
+        return Image.open(path_src)
+    except:
+        print(('Cannot open %s for reading. ' +
+            'have you set the wallpaper using bk?') % path, file=sys.stderr)
+        return Image.new('RGBA', (info.width, info.height), (0, 0, 0, 0))
+
 
 class WallpaperChanger(object):
     def __init__(self):
@@ -106,7 +114,7 @@ class WallpaperChanger(object):
             if not os.path.exists(source_path):
                 raise RuntimeError(source_path + ' does not exist')
 
-            source_img = Image.open(source_path)
+            source_img = open_image(source_path, self.monitors[args.monitor])
             if args.crop:
                 crop_area = (
                     int(source_img.size[0] * args.crop[0]),
@@ -181,7 +189,7 @@ class WallpaperChanger(object):
             path_dst = self.get_temp_path(m)
             paths.append(path_dst)
 
-            img = Image.open(path_src)
+            img = open_image(path_src, info)
             text = str(m)
 
             text_img = Image.new('RGBA', (400, 400), (0, 0, 0, 0))
@@ -221,7 +229,7 @@ class WindowsWallpaperChanger(WallpaperChanger):
         total_height = max(m.y + m.height for m in self.monitors.values())
         full_img = Image.new('RGBA', (total_width, total_height), (0, 0, 0, 0))
         for i, monitor in enumerate(self.monitors.values()):
-            sub_img = Image.open(paths[i])
+            sub_img = open_image(paths[i], monitor)
             sub_img = sub_img.resize((monitor.width, monitor.height))
             full_img.paste(sub_img, (monitor.x, monitor.y))
         full_img.save(full_path)
