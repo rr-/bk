@@ -233,40 +233,65 @@ class WindowsWallpaperChanger(WallpaperChanger):
             sub_img = sub_img.resize((monitor.width, monitor.height))
             full_img.paste(sub_img, (monitor.x, monitor.y))
         full_img.save(full_path)
-        ps_cmd = [
-            '''Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
-namespace Wallpaper {
-public class Setter {
-    public const int SetDesktopWallpaper = 20;
-    public const int UpdateIniFile = 0x01;
-    public const int SendWinIniChange = 0x02;
 
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    private static extern int SystemParametersInfo(
-        int uAction, int uParam, string lpvParam, int fuWinIni);
+        import ctypes
 
-    public static void SetWallpaper(string path) {
-        SystemParametersInfo(
-            SetDesktopWallpaper, 0, path, UpdateIniFile | SendWinIniChange);
-        RegistryKey key = Registry.CurrentUser.OpenSubKey(
-            "Control Panel\\\Desktop", true);
-        key.SetValue("WallpaperStyle", "1");
-        key.SetValue("TileWallpaper", "1");
-        key.Close();
-    }
-}
-}''' + "\n\"@",
-'[Wallpaper.Setter]::SetWallpaper(\'' + full_path + '\')']
-        self.run_powershell(ps_cmd)
+        BOOL  = ctypes.c_int
+        UINT  = ctypes.c_uint32
+        LONG = ctypes.c_long
+        DWORD = ctypes.c_ulong
+        HANDLE = ctypes.c_ulong
+        HKEY = HANDLE
+        PVOID = ctypes.c_void_p
+        PHKEY = ctypes.POINTER(HKEY)
+        BYTE = ctypes.c_char
+        PBYTE = ctypes.c_char_p
+        LPCSTR = ctypes.c_char_p
 
-    def run_powershell(self, cmd):
-        ps = subprocess.Popen(
-            ['powershell', '-command', ';'.join(cmd)],
-            stdout=subprocess.PIPE)
-        return ps.stdout.read().decode('utf-8')
+        SPI_SETDESKWALLPAPER  = 0x14
+        SPIF_UPDATEINIFILE    = 1
+        SPIF_SENDWININICHANGE = 2
+        HKEY_CURRENT_USER     = 0x80000001
+        KEY_ALL_ACCESS        = 0x000F003F
+        REG_SZ                = 0x00000001
+
+        user32 = ctypes.cdll.LoadLibrary('user32.dll')
+        user32.SystemParametersInfoA.argtypes = [UINT, UINT, PVOID, UINT]
+        user32.SystemParametersInfoA.restype = BOOL
+
+        user32.SystemParametersInfoA(
+            SPI_SETDESKWALLPAPER,
+            0,
+            full_path.encode('ascii'),
+            SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE)
+
+        advapi32 = ctypes.cdll.LoadLibrary('advapi32.dll')
+        advapi32.RegOpenKeyExA.restype = LONG
+        advapi32.RegOpenKeyExA.argtypes = [HKEY, LPCSTR, DWORD, DWORD, PHKEY]
+        advapi32.RegCloseKey.restype = LONG
+        advapi32.RegCloseKey.argtypes = [HKEY]
+        advapi32.RegSetValueExA.restype = LONG
+        advapi32.RegSetValueExA.argtypes = [
+            HKEY, LPCSTR, DWORD, DWORD, PBYTE, DWORD]
+
+        key = HKEY()
+        if advapi32.RegOpenKeyExA(
+            HKEY_CURRENT_USER,
+            'Control Panel\\Desktop'.encode('ascii'),
+            0,
+            KEY_ALL_ACCESS,
+            ctypes.byref(key)) == 0:
+
+            for node in ['WallpaperStyle', 'TileWallpaper']:
+                advapi32.RegSetValueExA(
+                    key,
+                    node.encode('ascii'),
+                    0,
+                    REG_SZ,
+                    '1'.encode('ascii'),
+                    1)
+
+            advapi32.RegCloseKey(key)
 
 class X11WallpaperChanger(WallpaperChanger):
     @staticmethod

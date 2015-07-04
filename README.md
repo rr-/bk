@@ -22,7 +22,6 @@ Specific to GNU/Linux:
 Specific to MS Windows:
 
 - Cygwin (will probably support native Python as well at some point)
-- Powershell
 
 ### Features
 
