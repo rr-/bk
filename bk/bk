@@ -176,6 +176,10 @@ class WallpaperChanger(object):
         os.unlink(temp_path)
         self.refresh()
 
+    def list(self, args):
+        for num, monitor in self.monitors.items():
+            print(num, monitor.width, monitor.height, monitor.x, monitor.y)
+
     def identify(self, args):
         font_path = self.get_font_path()
         font = ImageFont.truetype(font_path, 200, encoding='unic')
@@ -415,6 +419,10 @@ def add_swap_arg_parser(parent_parser, fmt, wc):
         help='second monitor number')
     p.set_defaults(func=wc.swap)
 
+def add_list_monitors_arg_parser(parent_parser, fmt, wc):
+    p = parent_parser.add_parser('list', help='list all monitors')
+    p.set_defaults(func=wc.list)
+
 class CustomHelpFormatter(argparse.HelpFormatter):
     def __init__(self, prog):
         super().__init__(prog, max_help_position=40, width=80)
@@ -439,6 +447,7 @@ def get_arg_parser(wc):
     add_set_arg_parser(subparsers, fmt, wc)
     add_swap_arg_parser(subparsers, fmt, wc)
     add_identify_arg_parser(subparsers, fmt, wc)
+    add_list_monitors_arg_parser(subparsers, fmt, wc)
     return parser
 
 def main():
